@@ -1,0 +1,36 @@
+** Drc report for Radio.kicad_pcb **
+** Created on 2025-11-06T06:38:05-0800 **
+
+** Found 7 DRC violations **
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0994 mm)
+    Rule: board setup constraints hole; error
+    @(176.8400 mm, 84.1700 mm): NPTH pad of MK2
+    @(176.2100 mm, 84.1700 mm): Pad 5 [GND] of MK2 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0500 mm)
+    Rule: netclass 'Default'; error
+    @(180.7500 mm, 100.0000 mm): Segment [Net-(U2-MISO)] on F.Cu
+    @(181.0000 mm, 106.2500 mm): Segment [Net-(U3-DIN)] on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0500 mm)
+    Rule: netclass 'Default'; error
+    @(178.5000 mm, 100.0000 mm): Segment [Net-(U2-MISO)] on F.Cu
+    @(181.0000 mm, 106.2500 mm): Segment [Net-(U3-DIN)] on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(176.8400 mm, 84.1700 mm): Circle of MK2 on F.Mask
+    @(176.8400 mm, 84.1700 mm): NPTH pad of MK2
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(186.0000 mm, 117.3400 mm): Reference field of C2
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(185.9750 mm, 120.8300 mm): Reference field of C3
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(185.8594 mm, 120.2600 mm): Segment of C2 on F.Silkscreen
+    @(185.9750 mm, 120.8300 mm): Reference field of C3
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

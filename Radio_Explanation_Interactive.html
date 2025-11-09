@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Deep Dive: ESP32 LoRa Radio</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --primary-text: #d4d4d4;
+            --secondary-text: #a0a0a0;
+            --table-bg: #252526;
+            --table-header-bg: #333337;
+            --table-border: #454545;
+            --row-hover-bg: #3c3c3c;
+            --accent-color: #0e639c;
+            --accent-hover: #1f88d1;
+            --pin-color: #c586c0;
+            --net-color: #9cdcfe;
+            --purpose-color: #4ec9b0;
+            --group-header-bg: #2d2d30;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: var(--table-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .styled-table thead tr th {
+            background-color: var(--table-header-bg);
+            padding: 12px;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        .styled-table tbody tr.component-row > td {
+            padding: 15px 12px;
+            border-bottom: 1px solid var(--table-border);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .styled-table tbody tr.group-header > td {
+            background-color: var(--group-header-bg);
+            color: var(--accent-hover);
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 10px;
+            border-top: 2px solid var(--accent-color);
+        }
+
+        .styled-table tbody tr.component-row:hover {
+            background-color: var(--row-hover-bg);
+        }
+
+        .ref-designator {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--accent-hover);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .component-value {
+            font-style: italic;
+            color: var(--secondary-text);
+        }
+
+        .details-row {
+            display: none;
+        }
+
+        .details-cell {
+            padding: 0 !important;
+            background-color: #2a2a2e;
+        }
+
+        .details-content {
+            padding: 20px;
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .details-content h4 {
+            margin-top: 0;
+            color: var(--primary-text);
+        }
+
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .pin-table th, .pin-table td {
+            border: 1px solid var(--table-border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .pin-table th {
+            background-color: #3a3a3f;
+        }
+        
+        .pin-name { color: var(--pin-color); font-family: 'Courier New', Courier, monospace; }
+        .net-name { color: var(--net-color); font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+        .purpose-text { color: var(--purpose-color); }
+
+        .arrow {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--primary-text);
+            transition: transform 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .open .arrow {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Technical Deep Dive: ESP32 LoRa Radio</h1>
+        <p>This interactive document provides a comprehensive technical breakdown of the project, organized by component importance. Click on any component row to view its detailed pinout and net connections. A full explanation of the wiring (Net List) is included at the bottom.</p>
+
+        <h2>Component Explorer</h2>
+        <table class="styled-table" id="main-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Value / Type</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody id="component-table-body">
+                <!-- Component Rows will be injected here by JS -->
+            </tbody>
+        </table>
+        
+        <h2>Wiring and Net List Explanation</h2>
+        <p>The following table details the purpose of every major electrical net (a group of connected wires) in the schematic. These nets form the communication and power backbone of the project.</p>
+        <table class="styled-table" id="net-table">
+             <thead>
+                <tr>
+                    <th>Net Name</th>
+                    <th>Purpose & Technical Details</th>
+                </tr>
+            </thead>
+            <tbody id="net-table-body">
+                <!-- Net Rows will be injected here by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const componentGroups = {
+            "Core ICs": {
+                "U1": { "val": "ESP32-DEVKITC", "purpose": "Primary MCU. Its dual-core CPU manages the LoRa stack, audio processing, and user interface.", "pins": [
+                    {"pin":"1", "name":"3V3", "net":"+3V3"}, {"pin":"2", "name":"EN", "net":"EN"}, {"pin":"9", "name":"IO25", "net":"I2S_DOUT"}, {"pin":"10", "name":"IO26", "net":"I2S_BCLK"}, {"pin":"11", "name":"IO27", "net":"I2S_LRC"}, {"pin":"14", "name":"GND1", "net":"GND"}, {"pin":"19", "name":"EXT_5V", "net":"V_BAT"}, {"pin":"23", "name":"IO15", "net":"TFT_CS"}, {"pin":"25", "name":"IO0", "net":"PTT_SW"}, {"pin":"29", "name":"IO5", "net":"LORA_CS"}, {"pin":"30", "name":"IO18", "net":"SPI_SCK"}, {"pin":"31", "name":"IO19", "net":"SPI_MISO"}, {"pin":"32", "name":"GND2", "net":"GND"}, {"pin":"37", "name":"IO23", "net":"SPI_MOSI"}, {"pin":"38", "name":"GND3", "net":"GND"}
+                ]},
+                "U2": { "val": "SX1272", "purpose": "LoRa RF Transceiver for long-range, low-power communication in the sub-GHz ISM band.", "pins": [
+                    {"pin":"1", "name":"VBAT1", "net":"+3V3"}, {"pin":"2", "name":"VR_ANA", "net":"+3V3"}, {"pin":"3", "name":"VR_DIG", "net":"+3V3"}, {"pin":"6", "name":"~RESET", "net":"LORA_RST"}, {"pin":"9", "name":"DIO0", "net":"LORA_DIO0"}, {"pin":"15", "name":"VBAT2", "net":"+3V3"}, {"pin":"16", "name":"GND", "net":"GND"}, {"pin":"17", "name":"SCK", "net":"SPI_SCK"}, {"pin":"18", "name":"MISO", "net":"SPI_MISO"}, {"pin":"19", "name":"MOSI", "net":"SPI_MOSI"}, {"pin":"20", "name":"NSS", "net":"LORA_CS"}, {"pin":"24", "name":"RFO", "net":"RF_OUT"}, {"pin":"25", "name":"RFI", "net":"RF_OUT"}, {"pin":"27", "name":"PA_BOOST", "net":"+3V3"}
+                ]}
+            },
+            "Support ICs & Modules": {
+                "U4": { "val": "MCP1826S", "purpose": "1A LDO Regulator. Converts battery voltage to a stable 3.3V for all electronics.", "pins": [{"pin":"1", "name":"VI", "net":"V_BAT"}, {"pin":"2", "name":"GND", "net":"GND"}, {"pin":"3", "name":"VO", "net":"+3V3"}]},
+                "U3": { "val": "MAX98357A", "purpose": "Class-D I2S Audio Amplifier. Efficiently drives the speaker with digital audio from the ESP32.", "pins": [
+                    {"pin":"1", "name":"DIN", "net":"I2S_DOUT"}, {"pin":"2", "name":"GAIN_SLOT", "net":"+3V3"}, {"pin":"3", "name":"GND", "net":"GND"}, {"pin":"4", "name":"~SD_MODE", "net":"+3V3"}, {"pin":"7", "name":"VDD", "net":"+3V3"}, {"pin":"9", "name":"OUTP", "net":"SPK_P"}, {"pin":"10", "name":"OUTN", "net":"SPK_N"}, {"pin":"14", "name":"LRCLK", "net":"I2S_LRC"}, {"pin":"16", "name":"BCLK", "net":"I2S_BCLK"}
+                ]},
+                "MK2": { "val": "INMP441", "purpose": "I2S Digital MEMS Microphone. Captures high-quality, low-noise audio for transmission.", "pins": [
+                    {"pin":"1", "name":"SCK", "net":"I2S_BCLK"}, {"pin":"2", "name":"SD", "net":"I2S_DIN"}, {"pin":"3", "name":"WS", "net":"I2S_LRC"}, {"pin":"4", "name":"L/R", "net":"GND"}, {"pin":"5", "name":"GND", "net":"GND"}, {"pin":"7", "name":"VDD", "net":"+3V3"}, {"pin":"8", "name":"CHIPEN", "net":"+3V3"}
+                ]},
+                "U5": { "val": "Adafruit 358 TFT", "purpose": "1.8-inch Color Display for user interface and status information.", "pins": [
+                    {"pin":"1", "name":"LITE", "net":"+3V3"}, {"pin":"2", "name":"MISO", "net":"SPI_MISO"}, {"pin":"3", "name":"SCK", "net":"SPI_SCK"}, {"pin":"4", "name":"MOSI", "net":"SPI_MOSI"}, {"pin":"5", "name":"TFT_CS", "net":"TFT_CS"}, {"pin":"7", "name":"D/C", "net":"TFT_DC"}, {"pin":"8", "name":"RESET", "net":"TFT_RST"}, {"pin":"9", "name":"VCC", "net":"+3V3"}, {"pin":"10", "name":"GND", "net":"GND"}
+                ]}
+            },
+            "User Interface": {
+                "SW1": { "val": "Push Button", "purpose": "Push-to-Talk (PTT) switch. Pulled low when pressed.", "pins": [{"pin":"1", "net":"PTT_SW"}, {"pin":"2", "net":"GND"}]},
+                "SW2": { "val": "Push Button", "purpose": "General purpose input button (e.g., Channel Up).", "pins": [{"pin":"1", "net":"SW2"}, {"pin":"2", "net":"GND"}]},
+                "SW3": { "val": "Push Button", "purpose": "General purpose input button (e.g., Channel Down).", "pins": [{"pin":"1", "net":"SW3"}, {"pin":"2", "net":"GND"}]},
+                "RV1": { "val": "10k Potentiometer", "purpose": "Analog input for volume control.", "pins": [{"pin":"1", "net":"+3V3"}, {"pin":"2", "net":"VOL_CTRL"}, {"pin":"3", "net":"GND"}]}
+            },
+            "Connectors & Peripherals": {
+                "BT1": { "val": "JST Connector", "purpose": "For connecting the LiPo battery.", "pins": [{"pin":"1", "net":"V_BAT"}, {"pin":"2", "net":"GND"}]},
+                "LS1": { "val": "Speaker", "purpose": "Audio output transducer.", "pins": [{"pin":"1", "net":"SPK_P"}, {"pin":"2", "net":"SPK_N"}]},
+                "J1": { "val": "SMA Connector", "purpose": "RF connector for the external antenna.", "pins": [{"pin":"1", "net":"RF_OUT"}, {"pin":"2", "net":"GND"}]},
+                "AE1": { "val": "Antenna", "purpose": "Radiates and receives RF signals.", "pins": [{"pin":"1", "net":"RF_OUT"}]}
+            },
+            "Passive Components": {
+                "R1": { "val": "10 kΩ", "purpose": "Pull-up resistor for the ESP32's Enable (EN) pin, ensuring the chip is enabled by default.", "pins": [{"pin":"1", "net":"+3V3"}, {"pin":"2", "net":"EN"}]},
+                "C1": { "val": "10 µF", "purpose": "Bulk input capacitor for the LDO regulator (U4). Smooths the input voltage from the battery.", "pins": [{"pin":"1", "net":"V_BAT"}, {"pin":"2", "net":"GND"}]},
+                "C3": { "val": "100 nF", "purpose": "Output capacitor for the LDO regulator (U4). Ensures a stable and noise-free 3.3V supply.", "pins": [{"pin":"1", "net":"+3V3"}, {"pin":"2", "net":"GND"}]},
+                "C2": { "val": "100 nF", "purpose": "Decoupling capacitor for the audio amplifier (U3). Placed close to the IC's power pin to supply transient current.", "pins": [{"pin":"1", "net":"+3V3"}, {"pin":"2", "net":"GND"}]}
+            }
+        };
+
+        const netlist = {
+            "Power & Ground": {
+                "+3V3": "The main regulated 3.3V power rail for all ICs. Generated by the LDO (U4).",
+                "GND": "The common ground reference (0V) for the entire circuit.",
+                "V_BAT": "The raw, unregulated voltage from the LiPo battery connector (BT1)."
+            },
+            "Control & Reset": {
+                "EN": "Enable pin for the ESP32. Pulled high by R1 to ensure the MCU is active.",
+                "LORA_RST": "Reset line for the LoRa module (U2). Allows the ESP32 to reset it if needed.",
+                "TFT_RST": "Reset line for the TFT display (U5).",
+                "TFT_DC": "Data/Command control line for the TFT display (U5). Tells the display if the ESP32 is sending pixel data or a command."
+            },
+            "SPI Bus": {
+                "SPI_SCK": "Serial Clock. Synchronizes data transfer between the ESP32 and the SPI peripherals (LoRa module and TFT).",
+                "SPI_MOSI": "Master Out, Slave In. Carries data from the ESP32 (Master) to the LoRa module and TFT (Slaves).",
+                "SPI_MISO": "Master In, Slave Out. Carries data from the LoRa module and TFT back to the ESP32.",
+                "LORA_CS": "Chip Select for LoRa. The ESP32 pulls this line low to communicate specifically with the LoRa module.",
+                "TFT_CS": "Chip Select for TFT. The ESP32 pulls this line low to communicate specifically with the display."
+            },
+            "I²S Bus": {
+                "I2S_BCLK": "Bit Clock. The clock signal for the I²S audio bus, synchronizing the audio data.",
+                "I2S_LRC": "Left/Right Clock (or Word Select). Selects the channel (left/right) for the audio data.",
+                "I2S_DOUT": "Data Out. Carries digital audio data from the ESP32 to the audio amplifier (U3).",
+                "I2S_DIN": "Data In. Carries digital audio data from the microphone (MK2) to the ESP32."
+            },
+            "Analog & UI Signals": {
+                "PTT_SW": "Push-to-Talk Switch signal. Connects to an ESP32 input pin to detect when the PTT button is pressed.",
+                "SW2": "Switch 2 signal line.",
+                "SW3": "Switch 3 signal line.",
+                "VOL_CTRL": "Analog voltage from the potentiometer (RV1) used by the ESP32's ADC to determine the desired volume level."
+            },
+            "RF & Audio Path": {
+                "RF_OUT": "The main Radio Frequency path between the LoRa module's output (RFO/RFI) and the antenna connector (J1).",
+                "SPK_P": "The positive differential audio output signal from the amplifier (U3) to the speaker (LS1).",
+                "SPK_N": "The negative differential audio output signal from the amplifier (U3) to the speaker (LS1)."
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const componentBody = document.getElementById('component-table-body');
+            for (const groupName in componentGroups) {
+                const groupHeader = document.createElement('tr');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `<td colspan="3">${groupName}</td>`;
+                componentBody.appendChild(groupHeader);
+
+                const components = componentGroups[groupName];
+                for (const ref in components) {
+                    const data = components[ref];
+                    const mainRow = document.createElement('tr');
+                    mainRow.className = 'component-row';
+                    mainRow.innerHTML = `
+                        <td><span class="arrow"></span><span class="ref-designator">${ref}</span></td>
+                        <td class="component-value">${data.val}</td>
+                        <td class="purpose-text">${data.purpose}</td>
+                    `;
+                    componentBody.appendChild(mainRow);
+
+                    const detailsRow = document.createElement('tr');
+                    detailsRow.className = 'details-row';
+                    const detailsCell = document.createElement('td');
+                    detailsCell.colSpan = 3;
+                    detailsCell.className = 'details-cell';
+                    
+                    let pinTable = '<h4>No detailed pinout available.</h4>';
+                    if (data.pins && data.pins.length > 0) {
+                        pinTable = `
+                            <h4>Pinout & Connections</h4>
+                            <table class="pin-table">
+                                <thead><tr><th>Pin</th><th>Name</th><th>Connected Net</th></tr></thead>
+                                <tbody>
+                                    ${data.pins.map(p => `
+                                        <tr>
+                                            <td>${p.pin}</td>
+                                            <td class="pin-name">${p.name}</td>
+                                            <td class="net-name">${p.net}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                    
+                    detailsCell.innerHTML = `<div class="details-content">${pinTable}</div>`;
+                    detailsRow.appendChild(detailsCell);
+                    componentBody.appendChild(detailsRow);
+
+                    mainRow.addEventListener('click', () => {
+                        mainRow.classList.toggle('open');
+                        detailsRow.style.display = detailsRow.style.display === 'table-row' ? 'none' : 'table-row';
+                    });
+                }
+            }
+            
+            const netBody = document.getElementById('net-table-body');
+            for (const groupName in netlist) {
+                const groupHeader = document.createElement('tr');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `<td colspan="2">${groupName}</td>`;
+                netBody.appendChild(groupHeader);
+                
+                const nets = netlist[groupName];
+                for(const netName in nets) {
+                    const netRow = document.createElement('tr');
+                    netRow.className = 'component-row'; // re-use style
+                    netRow.innerHTML = `
+                        <td class="net-name">${netName}</td>
+                        <td>${nets[netName]}</td>
+                    `;
+                    netBody.appendChild(netRow);
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
