@@ -6,3 +6,9 @@ I made this project to allow people to contact each other where cellular data wa
 
 For BOM, go to BOM folder
 
+## Images
+
+![Kicad PCB](Visuals/Kicad_PCB2.png)
+
+![Kicad Schematic](Visuals/Kicad_Schematic2.png)
+
