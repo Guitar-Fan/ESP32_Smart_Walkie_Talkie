@@ -28,7 +28,7 @@ I made this project to allow people to contact each other where cellular data wa
 | ESP32-DEVKITC V4 | 2 | Microcontroller development board | $5.32 | $10.64 | [eBay](https://www.ebay.com/itm/376392617070?_trkparms=amclksrc%3DITM%26aid%3D1110006%26algo%3DHOMESPLICE.SIM%26ao%3D1%26asc%3D295489%2C295741%26meid%3Dda038105f19d42039a8843a7de189449%26pid%3D101224%26rk%3D2%26rkt%3D5%26sd%3D254803105402%26itm%3D376392617070%26pmt%3D0%26noa%3D1%26pg%3D2332490%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26brand%3DUnbranded&_trksid=p2332490.c101224.m-1) |
 | 915 MHz Meshtastic LoRa Antenna with RP or SMA Male 915MHz for LoRaWan Aerial | 2 | Antenna 915hz | $5.00 | $10.00 | [eBay](https://www.ebay.com/itm/154891841854) |
 | [2-Pack] 3.7V USB Charger Cable SM-2P Plug Cable with LED Indicator | 1 | Recharging Unit for Battery | $3.98 | $3.98 | [Amazon](https://www.amazon.com/2-Pack-Charger-Indicator-Amphibious-Battery/dp/B0FF33J253/ref=sr_1_5?crid=3F64ZWXWYI4GX&dib=eyJ2IjoiMSJ9.dShI0FCoVCxkmj3VcNm0X3FeVJXyWgBw5SNL5-2zo0d7MHMEr3pxr67mRqV9QorPnh4mZVmE6PaYjT_cNWwKGBtMBPFHL9G6FWEzKNh7lC8rVYr1rqT-mEO0aWyLh6eytOy4_cegF8KKx7OOB3lJ-zRnNyzqDgUyEUZnxOvIPOe-FF0IfD4sqykooprAoQlWxnBgbXEuF2iA8g6ID8086wirsXZDU3KCbLuBofEYSdXxaZKsrkiOffhtKWccoTkpk79FoWOvh1IZZ6xjMKatYKhE434BEUCHQ5zzr7MZR74.RUJAmA2DAvtMvohmTjMrOt0MU9UaAOtuHxJc3qjY5y0&dib_tag=se&keywords=lipo+charger+3.7&qid=1763259034&refinements=p_36%3A-1000&rnid=386685011&sprefix=lipo+charger+3.%2Caps%2C256&sr=8-5) |
-| SX1262IMLTRT | 2 | LoRa transceiver module | $7.60 | $15.20 | [DigiKey](https://www.digikey.com/en/products/detail/semtech-corporation/SX1262IMLTRT/8564369) |
+| SX1272IMLTRT | 2 | LoRa transceiver module | $8.85 | $17.70 | [DigiKey](https://www.digikey.com/en/products/detail/semtech-corporation/SX1262IMLTRT/8564369) |
 | JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal | 2 | Headers for 3.7v LiPo Batteries | $0.10 | $0.20 | [DigiKey](https://www.digikey.com/en/products/detail/jst-sales-america-inc/S2B-PH-K-S/926626) |
 | MCP1826S-3302E/DB | 2 | Voltage regulator | $0.91 | $1.82 | [DigiKey](https://www.digikey.com/en/products/detail/microchip-technology/MCP1826S-3302E-DB/1635997) |
 | R_Potentiometer 10K | 2 | Variable resistor | $0.89 | $1.78 | [DigiKey](https://www.digikey.com/en/products/detail/bourns-inc/PTV09A-4020F-B103/3534181) |
@@ -43,7 +43,7 @@ Note: My build needs 2 of each component(s) to test
 
 Note2: Capacitors and resistors cheaper to buy at 10 quantity than what needed
 
-Total without Tax: $87.14  
+Total without Tax: $89.64  
 Total Funding Needed: $111.42
 
 
